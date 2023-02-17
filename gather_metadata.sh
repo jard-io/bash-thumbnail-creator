@@ -13,6 +13,17 @@ else
     fi
 fi
 
-#rest 
-echo "$(find $dir -type f \( -iname \*.jpg -o -iname \*.png \))"
-echo "this is $dir"
+#rest
+for i in $(find $dir -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.jpeg -o -iname \*.tiff -o -iname \*.tif -o -iname \*.gif -o -iname \*.bmp \))
+do 
+    tempDIR=$(dirname $i)
+    tempDIR+="/.thumbs" 
+    fileName=$(basename $i)
+    echo $fileName
+    if [ ! -d "$tempDIR" ] ; then
+        mkdir $tempDIR
+    fi
+done
+
+
+
