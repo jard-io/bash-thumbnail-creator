@@ -15,8 +15,6 @@ fi
 
 #this function is responsible for creating the thumbnails of different sizes
 function createThumbnail(){
-    #resolution
-    res=$1
     #loop condition
     size=$1
     #get file name without extension
