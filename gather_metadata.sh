@@ -88,14 +88,10 @@ do
     fi
 
     
-    #this gets the metadata of the file
-    mD=$(identify -verbose $i)
-
-    
     #this creates a .txt that contains the metadata of the image 
-    touch $dirMetadata/$fileName.txt
+    touch "$dirMetadata"/"$fileName".txt
     #this writes the metadata of the file into the newly created .txt file
-    echo $mD > $dirMetadata/$fileName.txt
+    identify -verbose "$i" > $dirMetadata/"$fileName".txt
 
 
 done
