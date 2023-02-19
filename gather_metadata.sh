@@ -57,6 +57,9 @@ do
     #directory where .thumbs is created
     dirThumbs=$tempDIR
     dirThumbs+="/.thumbs"
+    #directory where .metadata is created
+    dirMetadata=$tempDIR
+    dirMetadata+="/.metadata"
     #filename with extension 
     fileName=$(basename $i)
 
@@ -78,6 +81,22 @@ do
     elif [[ $W -gt 128 && $W -le 256 ]] || [[ $H -gt 128 && $H -le 256 ]] ; then
         createThumbnail 128 $fileName $i $dirThumbs
     fi
+
+    #this statement check if .metadata directory already exists
+    if [ ! -d "$dirMetadata" ]; then
+        mkdir $dirMetadata
+    fi
+
+    
+    #this gets the metadata of the file
+    mD=$(identify -verbose $i)
+
+    
+    #this creates a .txt that contains the metadata of the image 
+    touch $dirMetadata/$fileName.txt
+    #this writes the metadata of the file into the newly created .txt file
+    echo $mD > $dirMetadata/$fileName.txt
+
 
 done
 
