@@ -16,7 +16,7 @@ fi
 #this function is responsible for creating the thumbnails of different sizes
 function createThumbnail(){
     #loop condition
-    size=$1
+    size="$1"
     #get file name without extension
     fName=$(cut -d. -f1 <<< $2)
     #get extension
@@ -24,9 +24,9 @@ function createThumbnail(){
     #test fName and fExt are correct
     echo "$fName    $fExtension"
     #get file directory of image
-    fDir=$3
+    fDir="$3"
     #get directory to create thumbnails to
-    fDirT=$4
+    fDirT="$4"
 
     while [ $size -gt 0 ]
     do
@@ -50,36 +50,37 @@ function createThumbnail(){
 }
 
 #main
-for i in $(find $dir -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.jpeg -o -iname \*.tiff -o -iname \*.tif -o -iname \*.gif -o -iname \*.bmp \))
+find "$dir" -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.jpeg -o -iname \*.tiff -o -iname \*.tif -o -iname \*.gif -o -iname \*.bmp \) -print0 | while read -d $'\0' i
 do 
+   
     #directory where file is stored WITHOUT filename
-    tempDIR=$(dirname $i)
+    tempDIR=$(dirname "$i")
     #directory where .thumbs is created
-    dirThumbs=$tempDIR
+    dirThumbs="$tempDIR"
     dirThumbs+="/.thumbs"
     #directory where .metadata is created
-    dirMetadata=$tempDIR
+    dirMetadata="$tempDIR"
     dirMetadata+="/.metadata"
     #filename with extension 
-    fileName=$(basename $i)
+    fileName=$(basename "$i")
 
     #get width
-    W=$(identify -format '%w' $i)
+    W=$(identify -format '%w' "$i")
 
     #get height
-    H=$(identify -format '%h' $i)
-    echo $i $W x $H
+    H=$(identify -format '%h' "$i")
+    echo "$i" $W x $H
     # !!! - make sure to implement check so that images in .thumbs arent processed (not implemented yet)
     if [ ! -d "$dirThumbs" ] ; then
         mkdir $dirThumbs
     fi
     #conditions for creating thumbnails
     if [[ $W -gt 512 || $H -gt 512 ]] ; then
-        createThumbnail 512 $fileName $i $dirThumbs
+        createThumbnail 512 "$fileName" "$i" "$dirThumbs"
     elif [[ $W -gt 256 && $W -le 512 ]] || [[ $H -gt 256 && $H -le 512 ]] ; then
-        createThumbnail 256 $fileName $i $dirThumbs
+        createThumbnail 256 "$fileName" "$i" "$dirThumbs"
     elif [[ $W -gt 128 && $W -le 256 ]] || [[ $H -gt 128 && $H -le 256 ]] ; then
-        createThumbnail 128 $fileName $i $dirThumbs
+        createThumbnail 128 "$fileName" "$i" "$dirThumbs"
     fi
 
     #this statement check if .metadata directory already exists
@@ -88,17 +89,12 @@ do
     fi
 
     
-    #this gets the metadata of the file
-    mD=$(identify -verbose $i)
-
     
     #this creates a .txt that contains the metadata of the image 
-    touch $dirMetadata/$fileName.txt
+    touch "$dirMetadata"/"$fileName".txt
     #this writes the metadata of the file into the newly created .txt file
-    echo $mD > $dirMetadata/$fileName.txt
+    identify -verbose "$i" > $dirMetadata/"$fileName".txt
+ 
 
 
 done
-
-
-
