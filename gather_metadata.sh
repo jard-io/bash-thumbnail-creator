@@ -18,11 +18,13 @@ function createThumbnail(){
     #loop condition
     size=$1
     #get file name without extension
-    fName=$(cut -d. -f1 <<< $2)
+    fName="${2%.*}"
+
+    #$(cut -d. -f1 <<< $2)
     #get extension
-    fExtension=$(cut -d. -f2 <<< $2)
+    fExtension="${2##*.}"
     #test fName and fExt are correct
-    echo "$fName    $fExtension"
+    echo "$fName  $fExtension"
     #get file directory of image
     fDir=$3
     #get directory to create thumbnails to
@@ -31,14 +33,14 @@ function createThumbnail(){
     while [ $size -gt 0 ]
     do
         #create new filename
-        newName=$fDirT
+        newName="$fDirT"
         newName+="/$fName"
         newName+="-$size"
         newName+=".$fExtension"
-        echo $fDir
-        echo $newName
-        #convert
-        (convert $fDir -resize ${size}x${size} $newName)
+        # echo $fDir
+        # echo $newName
+        convert "$fDir" -resize ${size}x${size} "$newName"
+        
         #decrement loop
         if [ $size -eq 512 ] ; then
             size=$(($size-256))
@@ -49,11 +51,14 @@ function createThumbnail(){
 
 }
 
-#main
-for i in $(find $dir -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.jpeg -o -iname \*.tiff -o -iname \*.tif -o -iname \*.gif -o -iname \*.bmp \))
-do 
+# #main
+
+
+
+find $dir -name ".*" -prune -o -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.jpeg -o -iname \*.tiff -o -iname \*.tif -o -iname \*.gif -o -iname \*.bmp \) | while read i;
+do
     #directory where file is stored WITHOUT filename
-    tempDIR=$(dirname $i)
+    tempDIR=$(dirname "$i")
     #directory where .thumbs is created
     dirThumbs=$tempDIR
     dirThumbs+="/.thumbs"
@@ -61,40 +66,40 @@ do
     dirMetadata=$tempDIR
     dirMetadata+="/.metadata"
     #filename with extension 
-    fileName=$(basename $i)
+    fileName=$(basename "$i")
 
-    #get width
-    W=$(identify -format '%w' $i)
-
-    #get height
-    H=$(identify -format '%h' $i)
-    echo $i $W x $H
     # !!! - make sure to implement check so that images in .thumbs arent processed (not implemented yet)
     if [ ! -d "$dirThumbs" ] ; then
         mkdir $dirThumbs
     fi
-    #conditions for creating thumbnails
-    if [[ $W -gt 512 || $H -gt 512 ]] ; then
-        createThumbnail 512 $fileName $i $dirThumbs
-    elif [[ $W -gt 256 && $W -le 512 ]] || [[ $H -gt 256 && $H -le 512 ]] ; then
-        createThumbnail 256 $fileName $i $dirThumbs
-    elif [[ $W -gt 128 && $W -le 256 ]] || [[ $H -gt 128 && $H -le 256 ]] ; then
-        createThumbnail 128 $fileName $i $dirThumbs
-    fi
-
     #this statement check if .metadata directory already exists
     if [ ! -d "$dirMetadata" ]; then
         mkdir $dirMetadata
     fi
+    if [[ -e "$i" && ! -d "$i" ]]; then
+        
+        #get width
+        W=$(identify -format '%w' "$i")
 
-    
-    #this creates a .txt that contains the metadata of the image 
-    touch "$dirMetadata"/"$fileName".txt
-    #this writes the metadata of the file into the newly created .txt file
-    identify -verbose "$i" > $dirMetadata/"$fileName".txt
+        #get height
+        H=$(identify -format '%h' "$i")
+        echo $i $W x $H $fileName
+        #conditions for creating thumbnails
+        if [[ $W -gt 512 || $H -gt 512 ]] ; then
+            createThumbnail 512 "$fileName" "$i" $dirThumbs
+        elif [[ $W -gt 256 && $W -le 512 ]] || [[ $H -gt 256 && $H -le 512 ]] ; then
+            createThumbnail 256 "$fileName" "$i" $dirThumbs
+        elif [[ $W -gt 128 && $W -le 256 ]] || [[ $H -gt 128 && $H -le 256 ]] ; then
+            createThumbnail 128 "$fileName" "$i" $dirThumbs
+        fi
 
-
+        #this creates a .txt that contains the metadata of the image
+        touch "$dirMetadata/$fileName.txt"
+        #writes metadata of file into new .txt file
+        identify -verbose "$i" > "$dirMetadata/$fileName.txt"
+    fi
 done
+
 
 
 
