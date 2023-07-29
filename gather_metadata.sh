@@ -68,7 +68,7 @@ do
     #filename with extension 
     fileName=$(basename "$i")
 
-    # !!! - make sure to implement check so that images in .thumbs arent processed (not implemented yet)
+   
     if [ ! -d "$dirThumbs" ] ; then
         mkdir $dirThumbs
     fi
